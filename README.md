@@ -8,6 +8,3 @@ Processing steps:
 2. Pool reads across replicates and (if needed) sub-sample to 30M reads, use phantomPeakQualTools to obtain QC info.
 3. Binarize data using ChromHMM BinarizeBed, create segmentation based on existing Roadmap models and output states per 200bp bins.
 
-
-
-
