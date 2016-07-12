@@ -13,4 +13,3 @@ while read ID cell_type epitope BAMfile reads_aligned reads_duplicate; do
   fi;
 done < track_info.txt
 
-
