@@ -13,15 +13,15 @@ mkdir -p $DBDIR/Rout $DBDIR/out
 R CMD BATCH --no-save --no-restore $BINDIR/get_experiments.R $DBDIR/Rout/output_get_experiments.Rout
 
 # Get file links: 
-types="released_hg19 released_hg38 preliminary proposed submitted all"
-for type in ${types}; do
+types=(released_hg19 released_hg38 preliminary proposed submitted all)
+for type in ${types[@]}; do
+    echo $type
     qsub -cwd -j y -b y -V -N get_file_links_${type} \
         -o out/get_file_links_${type}.out \
-        -l mem_free=2G "R CMD BATCH --no-save --no-restore \"--args type='${type}' marks.only='${MARKS}'\" \
-        $BINDIR/get_file_links.R Rout/output_get_file_links_${type}.Rout"
+        -l mem_free=2G "R CMD BATCH --no-save --no-restore \"--args type='${type}' marks.only='${MARKS}'\" $BINDIR/get_file_links.R Rout/output_get_file_links_${type}.Rout"
 done
 
-# Wait until done!
+# Wait until done! 
 
 # Find celltypes that have all data:  
 

@@ -7,7 +7,10 @@ args=(commandArgs(TRUE))
 if (length(args)==0) {
     stop("No arguments supplied.")
 } else {        
-    eval(parse(text=args[[1]])) # parse argument: type 
+    print(args)
+    for (i in 1:length(args)){
+        eval(parse(text=args[[i]])) # parse argument: type 
+    }
 }
 
 if (marks.only){
@@ -55,10 +58,10 @@ if (marks.only){
 }
 
 hrefs_bam <- tapply(sel, list(experiments$target$label[sel], experiments$biosample_term_name[sel]), 
-                       function(x) {
-                           print(paste(experiments$target$label[x[1]], experiments$biosample_term_name[x[1]], sep=" - "))
-                           get_hrefs(x, filetype="bam");
-                       });
+                    function(x) {
+                        print(paste(experiments$target$label[x[1]], experiments$biosample_term_name[x[1]], sep=" - "))
+                        get_hrefs(x, filetype="bam");
+                    });
 
 num_cell_types <- colSums(apply(hrefs_bam, 1, sapply, function(x) sum(!is.null(x))))
 ord <- order(num_cell_types, decreasing=TRUE);
@@ -90,10 +93,10 @@ load(file=paste("experiments_", type, ".RData", sep=""))
 assay <- "DNase-seq";
 sel <- which(experiments$assay_term_name == assay);
 hrefs_bam <- tapply(sel, list(experiments$biosample_term_name[sel]), 
-                       function(x) {
-                           print(experiments$biosample_term_name[x[1]])
-                           get_hrefs(x, filetype="bam");
-                       });
+                    function(x) {
+                        print(experiments$biosample_term_name[x[1]])
+                        get_hrefs(x, filetype="bam");
+                    });
 
 save(hrefs_bam, file=paste(links_dir, "hrefs_DNase.RData", sep="/"));
 
@@ -105,7 +108,7 @@ max_files <- sapply(hrefs_bam, function(x) {
                     if (nrow(x) > 0) {
                         as.character(x$href[which.max(x$file_size)]);
                     }
-                       });
+                    });
 if (length(max_files) > 0) {
     df <- data.frame(epitope=epitope, cell_type=gsub("\\/", "_", gsub("\ ", "_", names(max_files)[!sapply(max_files, is.null)])),
                      file=paste("https://www.encodeproject.org", max_files[!sapply(max_files, is.null)], sep="/"));
