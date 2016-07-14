@@ -13,7 +13,7 @@ mkdir -p $DBDIR/Rout $DBDIR/out
 R CMD BATCH --no-save --no-restore $BINDIR/get_experiments.R $DBDIR/Rout/output_get_experiments.Rout
 
 # Get file links: 
-types=(released_hg19 released_hg38 preliminary proposed submitted all)
+types=(released_hg19 released_GRCh38 all)
 for type in ${types[@]}; do
     echo $type
     qsub -cwd -j y -b y -V -N get_file_links_${type} \
