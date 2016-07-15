@@ -68,6 +68,28 @@ ord <- order(num_cell_types, decreasing=TRUE);
 hrefs_bam <- hrefs_bam[ord,];
 save(hrefs_bam, file=paste0(links_dir, "/hrefs",lbl,".RData"));
 
+# Make availability matrix:
+mat <- apply(hrefs_bam,1:2,function(x){length(unlist(x))/2})
+write.table(mat, file=paste0(links_dir, "/replicates",lbl,".tsv"),quote=F,row.names=TRUE,col.names=TRUE,sep='\t')
+
+# Find cell types with full coverage:
+prod <- which(apply(mat,2,prod) != 0)
+avail <- names(prod)
+write.table(avail, file=paste0(links_dir, "/available",lbl,".tsv"),quote=F,row.names=F,col.names=F);
+
+# Plot available types
+pmat <- mat
+pmat[pmat > 0] <- 1
+ord <- order(-colSums(pmat),colnames(pmat),decreasing=TRUE)
+pmat <- pmat[,ord]
+
+png(paste0(links_dir,'/plot_availability',lbl,'.png'),res=450,units='in',width=10,height=15)
+par(mar = c(2,8,1.5,1))
+image(pmat, axes=FALSE, col=c('white','darkblue'),main=paste('Availability for',type))
+grid(nx=nrow(pmat), ny=ncol(pmat),col='grey',lty='solid',lwd=.25)
+text(y=seq(0,1,length.out=ncol(pmat)), x=par()$usr[3]-0.1*(par()$usr[4]-par()$usr[3]), labels=colnames(pmat), srt=0, adj=1, xpd=TRUE,cex=.6)
+text(x=seq(0,1,length.out=nrow(pmat)), y=par()$usr[3]-0.01*(par()$usr[4]-par()$usr[3]), labels=rownames(pmat), srt=0, adj=.5, xpd=TRUE,cex=.75)
+dev.off()
 ###
 
 for (i in 1:nrow(hrefs_bam)) {
@@ -99,9 +121,9 @@ hrefs_bam <- tapply(sel, list(experiments$biosample_term_name[sel]),
                     });
 
 save(hrefs_bam, file=paste(links_dir, "hrefs_DNase.RData", sep="/"));
+matDN <- apply(hrefs_bam,1:2,function(x){length(unlist(x))/2})
 
 ###
-
 epitope <- "DNase"
 df <- data.frame();
 max_files <- sapply(hrefs_bam, function(x) {
@@ -109,6 +131,7 @@ max_files <- sapply(hrefs_bam, function(x) {
                         as.character(x$href[which.max(x$file_size)]);
                     }
                     });
+
 if (length(max_files) > 0) {
     df <- data.frame(epitope=epitope, cell_type=gsub("\\/", "_", gsub("\ ", "_", names(max_files)[!sapply(max_files, is.null)])),
                      file=paste("https://www.encodeproject.org", max_files[!sapply(max_files, is.null)], sep="/"));
