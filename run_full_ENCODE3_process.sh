@@ -53,19 +53,28 @@ do
             echo "-- ${cell} + ${epitope}"
 
             # Download:
-            eval $( grep "${epitope},${cell}" $LDIR/${epitope}.csv | awk -F',' '{a = $3; split(a,b,"/"); printf("link=\"%s\"; id=%s;",$3,b[5])}' )
-
             # TODO handle replicates!
-            BAMFILE=${CELL_DIR}/${id}_${cell}_${epitope}.bam
-            if [[ ! -s ${BAMFILE} ]] 
-            then 
-                echo "Downloading ${BAMFILE}"
-                wget ${link} -o ${BAMFILE}.log -O ${BAMFILE} # BAM File
-                samtools index $BAMFILE # Index 
-            fi
+            # TODO might be multiline!
+            while read -r repl
+            do
+                eval $( echo $repl | awk -F',' '{a = $3; split(a,b,"/"); printf("link=\"%s\"; id=%s;",$3,b[5])}' )
 
-            # STEP 1 =================================================================
-            source $BINDIR/code_ENCODE3_process_step1.sh $id $cell $epitope ${CELL_DIR}
+                BAMFILE=${CELL_DIR}/${id}_${cell}_${epitope}.bam
+                if [[ ! -s ${BAMFILE} ]] # TODO add condition of final file
+                then 
+                    echo "Downloading ${BAMFILE}"
+                    wget ${link} -o ${BAMFILE}.log -O ${BAMFILE} # BAM File
+                    samtools index $BAMFILE # Index 
+                fi
+
+                # TODO add logic gate:
+                # STEP 1 -- Filter and remove duplicates for each individual file:
+                source $BINDIR/code_ENCODE3_process_step1.sh $id $cell $epitope ${CELL_DIR}
+
+            done < grep "${epitope},${cell}" $LDIR/${epitope}.csv 
+
+            # STEP 2 -- Pool replicates!
+            # source $BINDIR/submit_ENCODE3_process_step2.sh
 
 
 
@@ -75,14 +84,11 @@ do
         # STEP 0 - Get data we will need (bam format)
 
 
-        # STEP 2
-        # source $BINDIR/submit_ENCODE3_process_step2.sh
-
 
     done < $LDIR/available_marks.tsv
 
-        # STEP 3
-        # source $BINDIR/submit_ENCODE3_process_step3.sh
+    # STEP 3
+    # source $BINDIR/submit_ENCODE3_process_step3.sh
 done
 
 
