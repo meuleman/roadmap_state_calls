@@ -26,8 +26,7 @@ zcat ${OUTPUTDIR}/*_${cell_type}_${epitope}.filt.nodup.srt.SE.map.tagAlign.gz | 
 # =================================
 # Run 'run_spp_nodups.R' to obtain some QC stats on the final tagAlign file.
 # ================================
-Rscript ../../../software/phantompeakqualtools/run_spp_nodups.R \
-  -rf -c=${FINAL_TA_FILE} -savp -out=${OFPREFIX}.qc
+Rscript ../../../software/phantompeakqualtools/run_spp_nodups.R -rf -c=${FINAL_TA_FILE} -savp -out=${OFPREFIX}.qc
 
 # Sanity check to easily see if we were successful:
 cat ${OFPREFIX}.qc

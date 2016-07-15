@@ -6,17 +6,14 @@
 ### https://docs.google.com/document/d/1lG_Rd7fnYgRpSIqrIfuVlAz2dW1VaSQThzk836Db99c/edit
 ############################################################################################################
 
-ID=$1;
-cell_type=$2;
+id=$1;
+cell=$2;
 epitope=$3;
-RAW_BAM_FILE=$4;
+CELL_DIR=$4;
 
 RLEN=36; # Desired read length, based on Roadmap data.
-
-OUTPUTDIR="ENCODE3_data/${cell_type}";
-
-mkdir -p ${OUTPUTDIR};
-OFPREFIX="${OUTPUTDIR}/${ID}_${cell_type}_${epitope}";
+OFPREFIX=${CELL_DIR}/${id}_${cell}_${epitope}
+RAW_BAM_FILE=${OFPREFIX}.bam
 
 ############################################################################################################
 ### STEP 1B --- BASED ON ANSHUL'S ENCODE3 PROPOSAL
@@ -31,8 +28,8 @@ FILT_BAM_PREFIX="${OFPREFIX}.filt.srt"
 FILT_BAM_FILE="${FILT_BAM_PREFIX}.bam"
 MAPQ_THRESH=30
 
-#samtools view -F 1804 -q ${MAPQ_THRESH} -b ${RAW_BAM_FILE} > ${FILT_BAM_FILE}
-samtools view -F 1804 -q ${MAPQ_THRESH} -b ${RAW_BAM_FILE} | samtools sort - ${FILT_BAM_PREFIX}
+# samtools view -F 1804 -q ${MAPQ_THRESH} -b ${RAW_BAM_FILE} | samtools sort - -T ${FILT_BAM_PREFIX} # -T only for temp prefixes? 
+samtools view -F 1805 -q ${MAPQ_THRESH} -b ${RAW_BAM_FILE} | samtools sort - -o ${FILT_BAM_FILE}
 samtools view -H ${FILT_BAM_FILE} | grep SO
 
 # ========================

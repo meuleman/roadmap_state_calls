@@ -17,19 +17,19 @@ URLs <- list("released_hg19"    = "type=experiment&status=released&assembly=hg19
              "all"         = "type=experiment&replicates.library.biosample.donor.organism.scientific_name=Homo%20sapiens");
 
 for (i in 1:length(URLs)) {
-  url <- paste("https://www.encodeproject.org/search/?", URLs[[i]], "&format=json&limit=all", sep="");
-  nam <- names(URLs)[i];
-  print(nam);
-  if (length(grep(paste("^experiments_", nam, ".RData$", sep=""), dir())) == 0) {
-    call <- GET(url, config(c("Authorization" = paste("Basic", secret))))
-    obj <- fromJSON(rawToChar(call$content))
+    url <- paste("https://www.encodeproject.org/search/?", URLs[[i]], "&format=json&limit=all", sep="");
+    nam <- names(URLs)[i];
+    print(nam);
+    if (length(grep(paste("^experiments_", nam, ".RData$", sep=""), dir())) == 0) {
+        call <- GET(url, config(c("Authorization" = paste("Basic", secret))))
+        obj <- fromJSON(rawToChar(call$content))
 
-    # Parse some of the data and save.
-    assays <- obj$facets[3,"terms"][[1]]
-    dates <- obj$facets[22,"terms"][[1]]
-    filetypes <- obj$facets[15,"terms"][[1]];
-    experiments <- obj[["@graph"]]
-    save(assays, dates, filetypes, experiments, file=paste("experiments_", nam, ".RData", sep=""))
-  }
+        # Parse some of the data and save.
+        assays <- obj$facets[3,"terms"][[1]]
+        dates <- obj$facets[22,"terms"][[1]]
+        filetypes <- obj$facets[15,"terms"][[1]];
+        experiments <- obj[["@graph"]]
+        save(assays, dates, filetypes, experiments, file=paste("experiments_", nam, ".RData", sep=""))
+    }
 }
 

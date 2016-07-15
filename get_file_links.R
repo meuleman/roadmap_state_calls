@@ -79,7 +79,7 @@ for (i in 1:nrow(hrefs_bam)) {
         if (!is.null(hrefs_bam[i,j][[1]])) {
             max_file <- hrefs_bam[i,j][[1]]$href[which.max(hrefs_bam[i,j][[1]]$file_size)];
             df <- rbind(df, data.frame(epitope=epitope, cell_type=cell_type, 
-                                       file=paste("https://www.encodeproject.org", max_file, sep="/")));
+                                       file=paste0("https://www.encodeproject.org", max_file)));
         }
     }
     write.table(df, file=paste(links_dir, "/", epitope, ".csv", sep=""), 
@@ -112,7 +112,7 @@ max_files <- sapply(hrefs_bam, function(x) {
 
 if (length(max_files) > 0) {
     df <- data.frame(epitope=epitope, cell_type=gsub("\\/", "_", gsub("\ ", "_", names(max_files)[!sapply(max_files, is.null)])),
-                     file=paste("https://www.encodeproject.org", max_files[!sapply(max_files, is.null)], sep="/"));
+                     file=paste0("https://www.encodeproject.org", max_files[!sapply(max_files, is.null)]));
     write.table(df, file=paste(links_dir, "/", epitope, ".csv", sep=""), 
                 quote=FALSE, row.names=FALSE, sep=",");
 }
@@ -129,7 +129,7 @@ mat <-  rbind(mat,DNase)
 write.table(mat, file=paste0(links_dir, "/replicates",lbl,".tsv"),quote=F,row.names=TRUE,col.names=TRUE,sep='\t')
 
 # Find cell types with full coverage:
-prod <- which(apply(mat,2,prod) != 0)
+prod <- which(apply(mat[-8,],2,prod) != 0) # DNase coverage not necessary
 avail <- names(prod)
 write.table(avail, file=paste0(links_dir, "/available",lbl,".tsv"),quote=F,row.names=F,col.names=F);
 
