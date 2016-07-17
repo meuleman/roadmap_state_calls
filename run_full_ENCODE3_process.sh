@@ -3,12 +3,14 @@
 export DBDIR=$HOME/data/cHMM/db
 export BINDIR=$HOME/cHMM/bin
 export DATADIR=$DBDIR/files
+export TMP=$DATADIR/tmp
 
 # -- Vars -- 
 export MARKS=TRUE
 
 cd $DBDIR # everything into data directory.
 mkdir -p $DBDIR/Rout $DBDIR/out
+mkdir -p $DATADIR $TMP # make sure they exist
 
 # Get experiment information: 
 R CMD BATCH --no-save --no-restore $BINDIR/get_experiments.R $DBDIR/Rout/output_get_experiments.Rout
@@ -23,7 +25,7 @@ do
         -l mem_free=2G "R CMD BATCH --no-save --no-restore \"--args type='${type}' marks.only='${MARKS}'\" $BINDIR/get_file_links.R Rout/output_get_file_links_${type}.Rout"
 done
 
-# Wait until done! 
+# TODO Wait until done! 
 
 
 for type in ${types[@]}
@@ -45,41 +47,35 @@ do
         mkdir -p ${CELL_DIR}
         cd ${CELL_DIR}
 
-        # TODO Submit all of this as a qsub command {{{
         # For each epitope + DNase + WCE:
         while read -r p
         do 
             eval $( echo $p | awk -F'\t' '{printf("epitope=\"%s\";",$1)}' )
             echo "-- ${cell} + ${epitope}"
 
-            # Download:
-            # TODO handle replicates!
-            # TODO might be multiline!
+            # TODO make sure it handles replicates correctly.
             while read -r repl
             do
+                # STEP 0 + 1 -- Download data and also
+                # Filter and remove duplicates for each individual file:
+
                 eval $( echo $repl | awk -F',' '{a = $3; split(a,b,"/"); printf("link=\"%s\"; id=%s;",$3,b[5])}' )
 
-                BAMFILE=${CELL_DIR}/${id}_${cell}_${epitope}.bam
-                if [[ ! -s ${BAMFILE} ]] # TODO add condition of final file
-                then 
-                    echo "Downloading ${BAMFILE}"
-                    wget ${link} -o ${BAMFILE}.log -O ${BAMFILE} # BAM File
-                    samtools index $BAMFILE # Index 
-                fi
-
-                # TODO add logic gate:
-                # STEP 1 -- Filter and remove duplicates for each individual file:
-                source $BINDIR/code_ENCODE3_process_step1.sh $id $cell $epitope ${CELL_DIR}
+                JOBNAME=step1_${cell}_${epitope}_${id}
+                qsub -cwd -q long -l m_mem_free=25G -N $JOBNAME -j y -b y -V -r y $BINDIR/code_ENCODE3_process_step1.sh $id $cell $epitope $link ${CELL_DIR}
 
             done < grep "${epitope},${cell}" $LDIR/${epitope}.csv 
 
+            # TODO Hold until all previous step1 jobs for the cell type are done
+
             # STEP 2 -- Pool replicates!
-            # source $BINDIR/submit_ENCODE3_process_step2.sh
+            # TODO find phantopmeak quals software in pkg. 
+            JOBNAME=step2_${cell}_${epitope} 
+            qsub -cwd -q long -l m_mem_free=25G -N $JOBNAME -j y -b y -V -r y $BINDIR/code_ENCODE3_process_step2.sh $cell $epitope ${CELL_DIR}
 
-
+            # TODO Figure out if there are enough reads in the dataset!
 
         done < $DBDIR/epitopes
-        # }}}
 
         # STEP 0 - Get data we will need (bam format)
 
