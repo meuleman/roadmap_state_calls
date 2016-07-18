@@ -4,6 +4,7 @@
 ### HERE WE POOL ALL REPLICATES AND SUBSAMPLE TO 30M READS, ACCORDING TO ROADMAP
 ### WE ALSO RUN PHANTOMPEAKQUALTOOLS IN ORDER TO OBTAIN SOME QC STATS
 ###################################################
+SOFTWARE_DIR="/broad/compbio/meuleman/software"
 
 cell_type=$1;
 epitope=$2;
@@ -28,8 +29,7 @@ then
     # =================================
     # Run 'run_spp_nodups.R' to obtain some QC stats on the final tagAlign file.
     # ================================
-    # TODO FIND SOFTWARE!
-    Rscript ../../../software/phantompeakqualtools/run_spp_nodups.R -rf -c=${FINAL_TA_FILE} -savp -out=${OFPREFIX}.qc
+    Rscript ${SOFTWARE_DIR}/phantompeakqualtools/run_spp_nodups.R -rf -c=${FINAL_TA_FILE} -savp -out=${OFPREFIX}.qc
 
     # Sanity check to easily see if we were successful:
     cat ${OFPREFIX}.qc

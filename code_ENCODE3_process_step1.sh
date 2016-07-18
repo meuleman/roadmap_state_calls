@@ -5,6 +5,7 @@
 ### THE CURRENT VERSION OF THIS DOCUMENT CAN BE FOUND HERE:
 ### https://docs.google.com/document/d/1lG_Rd7fnYgRpSIqrIfuVlAz2dW1VaSQThzk836Db99c/edit
 ###################################################
+# UMAPDIR="/broad/compbio/anshul/projects/umap"
 
 id=$1;
 cell=$2;
@@ -24,12 +25,16 @@ FILT_BAM_PREFIX="${OFPREFIX}.filt.srt"
 FILT_BAM_FILE="${FILT_BAM_PREFIX}.bam"
 DUP_FILE_QC="${FILT_BAM_PREFIX}.dup.qc" # QC file for marking duplicates
 
-# Final files:
+# Final BAM files:
 FINAL_BAM_PREFIX="${OFPREFIX}.filt.nodup.srt"
 FINAL_BAM_FILE="${FINAL_BAM_PREFIX}.bam" # To be stored
 FINAL_BAM_INDEX_FILE="${FINAL_BAM_PREFIX}.bai" # To be stored
 FINAL_BAM_FILE_MAPSTATS="${FINAL_BAM_PREFIX}.flagstat.qc" # QC file
 PBC_FILE_QC="${FINAL_BAM_PREFIX}.pbc.qc" # quality stats
+
+# Final TA files:
+FINAL_TA_FILE="${FINAL_BAM_PREFIX}.SE.tagAlign.gz"
+FINAL_TA_MAP_FILE="${FINAL_BAM_PREFIX}.SE.map.tagAlign.gz"
 
 ###################################################
 ### STEP 0 --- Download data:
@@ -45,7 +50,7 @@ fi
 ### STEP 1B --- BASED ON ANSHUL'S ENCODE3 PROPOSAL
 ###################################################
 
-if [[ ! -s ${FILT_BAM_FILE} && ! -s ${FINAL_BAM_FILE} ]]
+if [[ ! -s ${FILT_BAM_FILE} && ! -s ${FINAL_TA_MAP_FILE} ]]
 then
     # =============================
     # Remove  unmapped, mate unmapped
@@ -67,7 +72,7 @@ then
     mv ${TMP_FILT_BAM_FILE} ${FILT_BAM_FILE}
 fi
 
-if [[ ! -s ${FINAL_BAM_FILE} && ! -s ${FINAL_BAM_INDEX_FILE} ]]
+if [[ ! -s ${FINAL_BAM_FILE} && ! -s ${FINAL_TA_MAP_FILE} ]]
 then
     # ============================
     # Remove duplicates
@@ -92,8 +97,8 @@ then
 
 fi
 
-# Remove temporary data if previous steps were "sucessful" - have non-zero output
-if [[ ! -s ${FINAL_BAM_FILE} && ! -s ${FINAL_BAM_INDEX_FILE} ]]
+# Remove temporary data if previous steps have non-zero output
+if [[ ! -s ${FINAL_BAM_FILE} && ! -s ${FINAL_TA_MAP_FILE} ]]
 then
     rm ${FILT_BAM_FILE}
     rm ${RAW_BAM_FILE}
@@ -106,9 +111,7 @@ fi
 # ===================
 # Create tagAlign file
 # ===================
-FINAL_TA_FILE="${FINAL_BAM_PREFIX}.SE.tagAlign.gz"
-
-if [[ ! -s ${FINAL_TA_FILE} ]]
+if [[ ! -s ${FINAL_TA_FILE} && ! -s ${FINAL_TA_MAP_FILE} ]]
 then
     #bedtools bamtobed -i ${FINAL_BAM_FILE} | awk 'BEGIN{OFS="\t"}{$4="N";$5="1000";print $0}' | gzip -c > ${FINAL_TA_FILE}
     bedtools bamtobed -i ${FINAL_BAM_FILE} | awk 'BEGIN{OFS="\t"}{$4="N";$5="1000";print "chr"$0}' | \
@@ -122,7 +125,6 @@ fi
 ### IT CALLS filterUniqueReads TO REMOVE ANY POSSIBLE READS IN 'UNMAPPABLE' LOCATIONS
 ###################################################
 
-# TODO find SEQDIR/UMAPDIR (and put in toplevel scripts)
 SDIR="${SEQDIR}/encodeHg19Male"
 UDIR="${UMAPDIR}/encodeHg19Male/globalmap_k20tok54"
 
@@ -138,8 +140,8 @@ then
     filterUniqueReads -s=${SDIR} -u=${UDIR} -v=${LOGFILE} ${FINAL_TA_FILE} | grep -v 'Warning' | gzip -c > ${OFNAME}.gz
     rm -rf ${TMPLOC}
 
-    ### NOTE THAT THIS SEEMS TO NEED AT LEAST _SOME_ KIND OF ACCESS TO A $DISPLAY.
-    ### SOMETIMES WHEN IT DOESN'T HAVE THIS, IT CRASHES WITHOUT WARNING.
+    # NOTE THAT THIS SEEMS TO NEED AT LEAST _SOME_ KIND OF ACCESS TO A $DISPLAY.
+    # SOMETIMES WHEN IT DOESN'T HAVE THIS, IT CRASHES WITHOUT WARNING.
 
     # Sanity check to see if we were successful:
     zcat ${OFNAME}.gz | tail

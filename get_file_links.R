@@ -13,6 +13,7 @@ if (length(args)==0) {
     }
 }
 
+# Will change the name of "Control" to "WCE"
 if (marks.only){
     epitopes=c("Control","H3K4me1","H3K4me3","H3K27me3","H3K36me3","H3K9me3","H3K27ac")
     lbl = '_marks'
@@ -61,6 +62,9 @@ hrefs_bam <- tapply(sel, list(experiments$target$label[sel], experiments$biosamp
                         print(paste(experiments$target$label[x[1]], experiments$biosample_term_name[x[1]], sep=" - "))
                         get_hrefs(x, filetype="bam");
                     });
+
+# Rename Control to WCE:
+rownames(hrefs_bam)[1] <- 'WCE'
 
 num_cell_types <- colSums(apply(hrefs_bam, 1, sapply, function(x) sum(!is.null(x))))
 ord <- order(num_cell_types, decreasing=TRUE);

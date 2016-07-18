@@ -3,14 +3,20 @@
 export DBDIR=$HOME/data/cHMM/db
 export BINDIR=$HOME/cHMM/bin
 export DATADIR=$DBDIR/files
+export CALLDIR=$DBDIR/calls
 export TMP=$DATADIR/tmp
+
+# For step1 - filtering unique reads 
+export SEQDIR="/broad/compbio/anshul/projects/encode/rawdata/sequence"
+export UMAPDIR="/broad/compbio/anshul/projects/umap" 
 
 # -- Vars -- 
 export MARKS=TRUE
+export NUMSTATES=18
 
 cd $DBDIR # everything into data directory.
 mkdir -p $DBDIR/Rout $DBDIR/out
-mkdir -p $DATADIR $TMP # make sure they exist
+mkdir -p $DATADIR $TMP $CALLDIR # make sure main dir exist
 
 # Get experiment information:
 R CMD BATCH --no-save --no-restore $BINDIR/get_experiments.R $DBDIR/Rout/output_get_experiments.Rout
@@ -36,6 +42,9 @@ do
     jobstatus=$(qstat -u $USERNAME | grep "get_file")
 done
 
+# TODO associate "CONTROL" as "WCE"
+
+# CHMM processing pipeline: 
 for type in ${types[@]}
 do 
     echo "Starting ChromHMM pipeline for data from ${type}"
@@ -43,7 +52,9 @@ do
     # Type specific directories: 
     LDIR=$DBDIR/file_links/${type}
     TYPE_DIR=$DATADIR/${type}
+    TCALL_DIR=$CALLDIR/${type}
     mkdir -p $TYPE_DIR
+    mkdir -p $TCALL_DIR
     cd $TYPE_DIR
 
     # Processing pipeline for each cell:
@@ -78,7 +89,7 @@ do
                 fi
             done < grep "${epitope},${cell}" $LDIR/${epitope}.csv 
 
-            # STEP 2 -- Pool replicates!  # TODO find phantompeak quals software for step2 to run correctly
+            # STEP 2 -- Pool replicates!
             JOBNAME=step2_${cell}_${epitope} 
             qsub -cwd -q long -l m_mem_free=25G -hold_jid ${step1_jobs} -N $JOBNAME -j y -b y -V -r y $BINDIR/code_ENCODE3_process_step2.sh $cell $epitope ${CELL_DIR}
 
@@ -86,11 +97,15 @@ do
 
         done < $DBDIR/epitopes # list of epitopes we are interested in
 
+        # TODO hold, wait step 2 to finish
+
+        CC_DIR=${TCALL_DIR}/${cell} # Calls directory
+        mkdir -p ${CC_DIR}
+
+        JOBNAME=step3_${cell}
+        qsub -cwd -q long -l m_mem_free=25G -hold_jid ${step2_jobs} -N $JOBNAME -j y -b y -V -r y $BINDIR/code_ENCODE3_process_step3.sh $cell ${CELL_DIR} ${CC_DIR}
+
     done < $LDIR/available_marks.tsv # list of available cell types for our marks 
-
-    # STEP 3
-    # source $BINDIR/submit_ENCODE3_process_step3.sh
-
 done
 
 
