@@ -113,8 +113,7 @@ fi
 # ===================
 if [[ ! -s ${FINAL_TA_FILE} && ! -s ${FINAL_TA_MAP_FILE} ]]
 then
-    #bedtools bamtobed -i ${FINAL_BAM_FILE} | awk 'BEGIN{OFS="\t"}{$4="N";$5="1000";print $0}' | gzip -c > ${FINAL_TA_FILE}
-    bedtools bamtobed -i ${FINAL_BAM_FILE} | awk 'BEGIN{OFS="\t"}{$4="N";$5="1000";print "chr"$0}' | \
+    bedtools bamtobed -i ${FINAL_BAM_FILE} | awk 'BEGIN{OFS="\t"}{$4="N";$5="1000";print $0}' | \
         awk 'BEGIN{FS="\t";OFS="\t"} $6=="+"{$3=$2+'"${RLEN}"';print $0} $6=="-"{$2=$3-'"${RLEN}"';print $0}' | \
         gzip -c > ${FINAL_TA_FILE}
 fi
