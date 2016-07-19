@@ -31,7 +31,7 @@ do
     echo $type
     qsub -cwd -j y -b y -V -N get_file_links_${type} \
         -o $DBDIR/out/get_file_links_${type}.out \
-        -l mem_free=2G "R CMD BATCH --no-save --no-restore \"--args type='${type}' marks.only='${MARKS}'\" $BINDIR/get_file_links.R Rout/output_get_file_links_${type}.Rout"
+        -l mfree=2G "R CMD BATCH --no-save --no-restore \"--args type='${type}' marks.only='${MARKS}'\" $BINDIR/get_file_links.R Rout/output_get_file_links_${type}.Rout"
 done
 
 # Wait until get_file_links jobs are done!
@@ -80,7 +80,7 @@ do
                 eval $( echo $repl | awk -F',' '{a = $3; split(a,b,"/"); printf("link=\"%s\"; id=%s;",$3,b[5])}' )
 
                 JOBNAME=step1_${cell}_${epitope}_${id}
-                qsub -cwd -q long -l m_mem_free=25G -N $JOBNAME -j y -b y -V -r y -o $DBDIR/out/$JOBNAME.out $BINDIR/code_ENCODE3_process_step1.sh $id $cell $epitope $link ${CELL_DIR}
+                qsub -cwd -q long -l mfree=25G -N $JOBNAME -j y -b y -V -r y -o $DBDIR/out/$JOBNAME.out $BINDIR/code_ENCODE3_process_step1.sh $id $cell $epitope $link ${CELL_DIR}
                 if [[ "${step1_jobs}" == "0" ]] # Add jobs for holding list:
                 then 
                     step1_jobs=${JOBNAME}
@@ -91,7 +91,7 @@ do
 
             # STEP 2 -- Pool replicates!
             JOBNAME=step2_${cell}_${epitope} 
-            qsub -cwd -q long -l m_mem_free=25G -hold_jid ${step1_jobs} -N $JOBNAME -o $DBDIR/out/$JOBNAME.out -j y -b y -V -r y $BINDIR/code_ENCODE3_process_step2.sh $cell $epitope ${CELL_DIR}
+            qsub -cwd -q long -l mfree=25G -hold_jid ${step1_jobs} -N $JOBNAME -o $DBDIR/out/$JOBNAME.out -j y -b y -V -r y $BINDIR/code_ENCODE3_process_step2.sh $cell $epitope ${CELL_DIR}
 
             # TODO Figure out if there are enough reads in the dataset!
 
@@ -102,7 +102,7 @@ do
         mkdir -p ${CC_DIR}
 
         JOBNAME=step3_${cell}
-        qsub -cwd -q long -l m_mem_free=25G -hold_jid ${step2_jobs} -N $JOBNAME -o $DBDIR/out/$JOBNAME.out -j y -b y -V -r y $BINDIR/code_ENCODE3_process_step3.sh $cell ${CELL_DIR} ${CC_DIR}
+        qsub -cwd -q long -l mfree=25G -hold_jid ${step2_jobs} -N $JOBNAME -o $DBDIR/out/$JOBNAME.out -j y -b y -V -r y $BINDIR/code_ENCODE3_process_step3.sh $cell ${CELL_DIR} ${CC_DIR}
 
     done < $LDIR/available_marks.tsv # list of available cell types for our marks 
 done
