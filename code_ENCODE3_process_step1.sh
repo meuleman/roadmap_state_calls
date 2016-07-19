@@ -137,7 +137,7 @@ then
     export TMPLOC=${TMP}/tmp_${RANDOM}${RANDOM};
     mkdir -p ${TMPLOC};
     export MCR_CACHE_ROOT=${TMPLOC};
-    filterUniqueReads -s=${SDIR} -u=${UDIR} -v=${LOGFILE} ${FINAL_TA_FILE} | grep -v 'Warning' | gzip -c > ${OFNAME}.gz
+    $BINDIR/filterUniqueReads -s=${SDIR} -u=${UDIR} -v=${LOGFILE} ${FINAL_TA_FILE} | grep -v 'Warning' | gzip -c > ${OFNAME}.gz
     rm -rf ${TMPLOC}
 
     # NOTE THAT THIS SEEMS TO NEED AT LEAST _SOME_ KIND OF ACCESS TO A $DISPLAY.

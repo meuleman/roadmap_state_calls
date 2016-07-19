@@ -24,6 +24,7 @@ then
         shuf -n ${NREADS} | sort -k1,1V -k2,2g | gzip -c > ${FINAL_TA_FILE}
 fi 
 
+# NOTE: need R library spp from http://compbio.med.harvard.edu/Supplements/ChIP-seq/ 
 if [[ ! -s ${OFPREFIX}.qc ]] 
 then
     # =================================
