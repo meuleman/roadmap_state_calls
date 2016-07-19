@@ -13,6 +13,7 @@ export UMAPDIR="/broad/compbio/anshul/projects/umap"
 # -- Vars -- 
 export MARKS=TRUE
 export NUMSTATES=18
+export sleep_time=10
 
 cd $DBDIR # everything into data directory.
 mkdir -p $DBDIR/Rout $DBDIR/out
@@ -27,7 +28,7 @@ for type in ${types[@]}
 do
     echo $type
     qsub -cwd -j y -b y -V -N get_file_links_${type} \
-        -o out/get_file_links_${type}.out \
+        -o $DBDIR/out/get_file_links_${type}.out \
         -l mem_free=2G "R CMD BATCH --no-save --no-restore \"--args type='${type}' marks.only='${MARKS}'\" $BINDIR/get_file_links.R Rout/output_get_file_links_${type}.Rout"
 done
 
@@ -41,8 +42,6 @@ do
     sleep $sleep_time
     jobstatus=$(qstat -u $USERNAME | grep "get_file")
 done
-
-# TODO associate "CONTROL" as "WCE"
 
 # CHMM processing pipeline: 
 for type in ${types[@]}
@@ -80,7 +79,7 @@ do
                 eval $( echo $repl | awk -F',' '{a = $3; split(a,b,"/"); printf("link=\"%s\"; id=%s;",$3,b[5])}' )
 
                 JOBNAME=step1_${cell}_${epitope}_${id}
-                qsub -cwd -q long -l m_mem_free=25G -N $JOBNAME -j y -b y -V -r y $BINDIR/code_ENCODE3_process_step1.sh $id $cell $epitope $link ${CELL_DIR}
+                qsub -cwd -q long -l m_mem_free=25G -N $JOBNAME -j y -b y -V -r y -o $DBDIR/out/$JOBNAME.out $BINDIR/code_ENCODE3_process_step1.sh $id $cell $epitope $link ${CELL_DIR}
                 if [[ "${step1_jobs}" == "0" ]] # Add jobs for holding list:
                 then 
                     step1_jobs=${JOBNAME}
@@ -91,19 +90,18 @@ do
 
             # STEP 2 -- Pool replicates!
             JOBNAME=step2_${cell}_${epitope} 
-            qsub -cwd -q long -l m_mem_free=25G -hold_jid ${step1_jobs} -N $JOBNAME -j y -b y -V -r y $BINDIR/code_ENCODE3_process_step2.sh $cell $epitope ${CELL_DIR}
+            qsub -cwd -q long -l m_mem_free=25G -hold_jid ${step1_jobs} -N $JOBNAME -o $DBDIR/out/$JOBNAME.out -j y -b y -V -r y $BINDIR/code_ENCODE3_process_step2.sh $cell $epitope ${CELL_DIR}
 
             # TODO Figure out if there are enough reads in the dataset!
 
         done < $DBDIR/epitopes # list of epitopes we are interested in
 
         # TODO hold, wait step 2 to finish
-
         CC_DIR=${TCALL_DIR}/${cell} # Calls directory
         mkdir -p ${CC_DIR}
 
         JOBNAME=step3_${cell}
-        qsub -cwd -q long -l m_mem_free=25G -hold_jid ${step2_jobs} -N $JOBNAME -j y -b y -V -r y $BINDIR/code_ENCODE3_process_step3.sh $cell ${CELL_DIR} ${CC_DIR}
+        qsub -cwd -q long -l m_mem_free=25G -hold_jid ${step2_jobs} -N $JOBNAME -o $DBDIR/out/$JOBNAME.out -j y -b y -V -r y $BINDIR/code_ENCODE3_process_step3.sh $cell ${CELL_DIR} ${CC_DIR}
 
     done < $LDIR/available_marks.tsv # list of available cell types for our marks 
 done
