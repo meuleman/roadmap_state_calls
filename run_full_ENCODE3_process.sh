@@ -9,6 +9,8 @@ export TMP=$DATADIR/tmp
 # For step1 - filtering unique reads 
 export SEQDIR="/broad/compbio/anshul/projects/encode/rawdata/sequence"
 export UMAPDIR="/broad/compbio/anshul/projects/umap" 
+export CHBIN="/broad/compbio/anshul/projects/encode/preprocessing/segmentations/chromhmm/scripts"
+export CHMM="/broad/compbio/anshul/projects/encode/preprocessing/segmentations/chromhmm/ChromHMM/ChromHMM.jar"
 
 # -- Vars -- 
 export MARKS=TRUE
@@ -72,7 +74,6 @@ do
             echo "-- ${cell} + ${epitope}"
 
             step1_jobs="0"
-            # TODO make sure it handles replicates correctly.
             while read -r repl
             do
                 # STEP 0 & 1: Download data, filter, remove duplicates.
@@ -86,7 +87,7 @@ do
                 else
                     step1_jobs=${step1_jobs},${JOBNAME}
                 fi
-            done < grep "${epitope},${cell}" $LDIR/${epitope}.csv 
+            done < <(grep "${epitope},${cell}" $LDIR/${epitope}.csv)
 
             # STEP 2 -- Pool replicates!
             JOBNAME=step2_${cell}_${epitope} 

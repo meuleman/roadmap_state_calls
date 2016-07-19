@@ -57,7 +57,7 @@ then
     # not primary alignment, reads failing platform
     # Remove low MAPQ reads
     # ==================  
-    samtools view -F 1805 -q ${MAPQ_THRESH} -b ${RAW_BAM_FILE} | samtools sort - -o ${FILT_BAM_FILE}
+    samtools view -F 1805 -q ${MAPQ_THRESH} -b ${RAW_BAM_FILE} | samtools sort - -T ${FILT_BAM_PREFIX}.tmp -o ${FILT_BAM_FILE}
     samtools view -H ${FILT_BAM_FILE} | grep SO
 
     # ========================
