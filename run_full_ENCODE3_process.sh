@@ -10,7 +10,10 @@ export TMP=$DATADIR/tmp
 export SEQDIR="/broad/compbio/anshul/projects/encode/rawdata/sequence"
 export UMAPDIR="/broad/compbio/anshul/projects/umap" 
 export CHBIN="/broad/compbio/anshul/projects/encode/preprocessing/segmentations/chromhmm/scripts"
-export CHMM="/broad/compbio/anshul/projects/encode/preprocessing/segmentations/chromhmm/ChromHMM/ChromHMM.jar"
+# Get CHMM here: http://compbio.mit.edu/ChromHMM/ChromHMM.zip
+export CHMM=$HOME/data/software/ChromHMM/ChromHMM.jar
+# Older version in anshul's direcotry:
+# export CHMM="/broad/compbio/anshul/projects/encode/preprocessing/segmentations/chromhmm/ChromHMM/ChromHMM.jar"
 
 # -- Vars -- 
 export MARKS=TRUE

@@ -43,6 +43,7 @@ if [[ ! -s ${RAW_BAM_FILE} && ! -s ${FINAL_BAM_FILE} ]]
 then 
     echo "Downloading ${RAW_BAM_FILE}"
     wget ${link} -o ${RAW_BAM_FILE}.log -O ${RAW_BAM_FILE} # BAM File
+    echo "Indexing ${RAW_BAM_FILE}"
     samtools index ${RAW_BAM_FILE} # Index (TODO check if necessary)
 fi
 
@@ -57,11 +58,12 @@ then
     # not primary alignment, reads failing platform
     # Remove low MAPQ reads
     # ==================  
+    echo "Filtering to get ${FILT_BAM_FILE}"
     samtools view -F 1805 -q ${MAPQ_THRESH} -b ${RAW_BAM_FILE} | samtools sort - -T ${FILT_BAM_PREFIX}.tmp -o ${FILT_BAM_FILE}
     samtools view -H ${FILT_BAM_FILE} | grep SO
 
     # ========================
-    # Mark duplicates
+    echo "Marking duplicates for ${FILT_BAM_FILE}"
     # ======================
     TMP_FILT_BAM_FILE="${FILT_BAM_PREFIX}.dupmark.bam"
     MARKDUP="/seq/software/picard/1.802/bin/MarkDuplicates.jar";
@@ -78,9 +80,10 @@ then
     # Remove duplicates
     # Index final position sorted BAM
     # ============================
+    echo "Removing duplicates to get ${FINAL_BAM_FILE}"
     samtools view -F 1804 -b ${FILT_BAM_FILE} > ${FINAL_BAM_FILE}
 
-    # Index Final BAM file
+    echo "Indexing ${FINAL_BAM_FILE}"
     samtools index ${FINAL_BAM_FILE} ${FINAL_BAM_INDEX_FILE}
 
     samtools flagstat ${FINAL_BAM_FILE} > ${FINAL_BAM_FILE_MAPSTATS}
