@@ -70,4 +70,3 @@ echo "Chromatin state frequencies:";
 cat freqs/${MODELNAME}/table_${cell_type}.txt
 
 
-

@@ -21,8 +21,8 @@ then
     # =================================
     # Pool all tagAlign files for the same cell type and epitope, and subsample to 30M reads
     # ================================
-    zcat ${CELL_DIR}/*_${cell_type}_${epitope}.filt.nodup.srt.SE.map.tagAlign.gz | \
-        shuf -n ${NREADS} | sort -k1,1V -k2,2g | gzip -c > ${FINAL_TA_FILE}
+    echo "Pool files and subsample to create ${FINAL_TA_FILE}"
+    zcat ${CELL_DIR}/*_${cell_type}_${epitope}.filt.nodup.srt.SE.map.tagAlign.gz | shuf -n ${NREADS} | sort -k1,1V -k2,2g | gzip -c > ${FINAL_TA_FILE}
 fi 
 
 # NOTE: need R library spp from http://compbio.med.harvard.edu/Supplements/ChIP-seq/ 
