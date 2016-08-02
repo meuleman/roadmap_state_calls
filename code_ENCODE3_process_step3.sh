@@ -15,7 +15,7 @@ HG19REF=$DBDIR/hg19.genome
 if [[ ! -s $HG19REF ]] 
 then
     wget http://hgdownload.cse.ucsc.edu/goldenpath/hg19/database/chromInfo.txt.gz -O $HG19REF\.gz
-    gunzip -c $HG19REF.gz > $HG19REF
+    gunzip -c $HG19REF.gz | awk '$1 ~ /chr[0-9X]+$/{print $1,$2}' > $HG19REF
     rm $HG19REF.gz
 fi
 
