@@ -11,9 +11,17 @@ CC_DIR=$3
 MEM=8;
 NUMSTATES=18;
 
+HG19REF=$DBDIR/hg19.genome
+if [[ ! -s $HG19REF ]] 
+then
+    wget http://hgdownload.cse.ucsc.edu/goldenpath/hg19/database/chromInfo.txt.gz -O $HG19REF\.gz
+    gunzip -c $HG19REF.gz > $HG19REF
+    rm $HG19REF.gz
+fi
+
 if [[ "$NUMSTATES" == "18" ]] 
 then 
-    MODEL="/broad/compbio/anshul/projects/roadmap/segmentations/models/core_K27ac/parallel/set1/final/model_18_core_K27ac.txt";
+    MODEL="/broad/compbio/anshul/projects/roadmap/chromhmmSegmentations/ChmmModels/core_K27ac/parallel/set1/final/model_18_core_K27ac.txt"
     MODELNAME="observed_aux";
     epitopes="H3K4me1 H3K4me3 H3K27me3 H3K36me3 H3K9me3 H3K27ac";
 else 
@@ -42,8 +50,8 @@ done
 #==================================
 #FRAGLEN_CONS=`cat ${CELL_DIR}/FINAL_*.qc | awk '{print $3}' | sed -r 's/,[^\t]+//g' | sort -n | uniq -c | sort -n | tail -n 1 | awk '{print $2}'`;
 FRAGLEN_CONS=200;
-#ChromHMM_scripts/chmm_binarize.sh ${CC_DIR}/metaDataFileList.txt $((${FRAGLEN_CONS}/2)) ${CC_DIR} ~/hg19.genome ${MEM} ${CELL_DIR} ${CELL_DIR}
-java -mx$((MEM * 1024))M -jar $CHMM BinarizeBed -c ${CELL_DIR} -n $((${FRAGLEN_CONS}/2)) ~/hg19.genome ${CELL_DIR} ${CC_DIR}/metaDataFileList.txt ${CC_DIR}
+#ChromHMM_scripts/chmm_binarize.sh ${CC_DIR}/metaDataFileList.txt $((${FRAGLEN_CONS}/2)) ${CC_DIR} $HG19REF ${MEM} ${CELL_DIR} ${CELL_DIR}
+java -mx$((MEM * 1024))M -jar $CHMM BinarizeBed -c ${CELL_DIR} -n $((${FRAGLEN_CONS}/2)) $HG19REF ${CELL_DIR} ${CC_DIR}/metaDataFileList.txt ${CC_DIR}
 
 #==================================
 # Call chromatin states
@@ -51,7 +59,7 @@ java -mx$((MEM * 1024))M -jar $CHMM BinarizeBed -c ${CELL_DIR} -n $((${FRAGLEN_C
 FILELIST="${CC_DIR}/filelist.txt";
 find ${CC_DIR} -name "*_binary.txt" -exec basename {} \; | sort > ${FILELIST}
 #ChromHMM_scripts/chmm_predict.sh ${CC_DIR} ${FILELIST} ${CC_DIR} CALLS ${MODEL} ${MEM}
-java -mx$((MEM * 1024))M -jar $CHMM MakeSegmentation -b 200 -f ${FILELIST} -i CALLS -l ~/hg19.genome ${MODEL} ${CC_DIR} ${CC_DIR}
+java -mx$((MEM * 1024))M -jar $CHMM MakeSegmentation -b 200 -f ${FILELIST} -i CALLS -l $HG19REF ${MODEL} ${CC_DIR} ${CC_DIR}
 
 #ChromHMM_scripts/chmm_relabel.sh ${MODEL} ${CC_DIR} CALLS_REORDERED \
 #  /broad/compbio/anshul/projects/roadmap/segmentations/models/core_K27ac/parallel/set1/final/colormap_18_core_K27ac.tab
@@ -59,7 +67,7 @@ java -mx$((MEM * 1024))M -jar $CHMM MakeSegmentation -b 200 -f ${FILELIST} -i CA
 mkdir -p ${CC_DIR}/STATEBYLINE
 #ChromHMM_scripts/chmm_statesbyline.sh ${CC_DIR} ${FILELIST} ${CC_DIR} CALLS_PER_LINE ${MODEL} ${MEM}
 java -mx$((MEM * 1024))M -jar $CHMM MakeSegmentation -b 200 -nobed -printstatesbyline -f ${FILELIST} \
-  -i CALLS_PER_LINE -l ~/hg19.genome ${MODEL} ${CC_DIR} ${CC_DIR}
+  -i CALLS_PER_LINE -l $HG19REF ${MODEL} ${CC_DIR} ${CC_DIR}
 gzip -f ${CC_DIR}/STATEBYLINE/*_statebyline.txt
 
 mkdir -p freqs/${MODELNAME};
