@@ -5,7 +5,7 @@
 ### WE ALSO RUN PHANTOMPEAKQUALTOOLS IN ORDER TO OBTAIN SOME QC STATS
 ###################################################
 SOFTWARE_DIR="/broad/compbio/meuleman/software"
-SPP_EXISTS=FALSE # enable if you have it installed.
+SPP_EXISTS=false # enable if you have it installed.
 
 cell_type=$1;
 epitope=$2;
@@ -31,6 +31,7 @@ then
     # =================================
     # Run 'run_spp_nodups.R' to obtain some QC stats on the final tagAlign file.
     # ================================
+    echo "QC stats on the final tagAlign file. Yields ${OFPREFIX}.qc"
     Rscript ${SOFTWARE_DIR}/phantompeakqualtools/run_spp_nodups.R -rf -c=${FINAL_TA_FILE} -savp -out=${OFPREFIX}.qc
 
     # Sanity check to easily see if we were successful:
