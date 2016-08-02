@@ -71,6 +71,7 @@ do
         cd ${CELL_DIR}
 
         # For each epitope + DNase + WCE:
+        step2_jobs="0"
         while read -r p
         do 
             eval $( echo $p | awk -F'\t' '{printf("epitope=\"%s\";",$1)}' )
@@ -83,7 +84,12 @@ do
                 eval $( echo $repl | awk -F',' '{a = $3; split(a,b,"/"); printf("link=\"%s\"; id=%s;",$3,b[5])}' )
 
                 JOBNAME=step1_${cell}_${epitope}_${id}
-                qsub -cwd -q long -l mfree=25G -N $JOBNAME -j y -b y -V -r y -o $DBDIR/out/$JOBNAME.out $BINDIR/code_ENCODE3_process_step1.sh $id $cell $epitope $link ${CELL_DIR}
+                STEP1_FILE="${CELL_DIR}/${id}_${cell}_${epitope}.filt.nodup.srt.SE.map.tagAlign.gz"
+                if [[ ! -s $STEP1_FILE ]]
+                then
+                    qsub -cwd -q long -l mfree=25G -N $JOBNAME -j y -b y -V -r y -o $DBDIR/out/$JOBNAME.out $BINDIR/code_ENCODE3_process_step1.sh $id $cell $epitope $link ${CELL_DIR}
+                fi
+
                 if [[ "${step1_jobs}" == "0" ]] # Add jobs for holding list:
                 then 
                     step1_jobs=${JOBNAME}
@@ -94,7 +100,18 @@ do
 
             # STEP 2 -- Pool replicates!
             JOBNAME=step2_${cell}_${epitope} 
-            qsub -cwd -q long -l mfree=25G -hold_jid ${step1_jobs} -N $JOBNAME -o $DBDIR/out/$JOBNAME.out -j y -b y -V -r y $BINDIR/code_ENCODE3_process_step2.sh $cell $epitope ${CELL_DIR}
+            STEP2_FILE="${CELL_DIR}/FINAL_${cell_type}_${epitope}.tagAlign.gz"
+            if [[ ! -s $STEP2_FILE ]]
+            then
+                qsub -cwd -q long -l mfree=25G -hold_jid ${step1_jobs} -N $JOBNAME -o $DBDIR/out/$JOBNAME.out -j y -b y -V -r y $BINDIR/code_ENCODE3_process_step2.sh $cell $epitope ${CELL_DIR}
+            fi
+
+            if [[ "${step2_jobs}" == "0" ]] 
+            then 
+                step2_jobs=${JOBNAME}
+            else
+                step2_jobs=${step2_jobs},${JOBNAME}
+            fi
 
             # TODO Figure out if there are enough reads in the dataset!
 
