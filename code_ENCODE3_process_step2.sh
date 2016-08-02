@@ -5,6 +5,7 @@
 ### WE ALSO RUN PHANTOMPEAKQUALTOOLS IN ORDER TO OBTAIN SOME QC STATS
 ###################################################
 SOFTWARE_DIR="/broad/compbio/meuleman/software"
+SPP_EXISTS=FALSE # enable if you have it installed.
 
 cell_type=$1;
 epitope=$2;
@@ -25,7 +26,7 @@ then
 fi 
 
 # NOTE: need R library spp from http://compbio.med.harvard.edu/Supplements/ChIP-seq/ 
-if [[ ! -s ${OFPREFIX}.qc ]] 
+if [[ ! -s ${OFPREFIX}.qc && ${SPP_EXISTS} ]] 
 then
     # =================================
     # Run 'run_spp_nodups.R' to obtain some QC stats on the final tagAlign file.

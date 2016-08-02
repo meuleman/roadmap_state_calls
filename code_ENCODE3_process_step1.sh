@@ -44,6 +44,7 @@ then
     echo "Downloading ${RAW_BAM_FILE}"
     wget ${link} -o ${RAW_BAM_FILE}.log -O ${RAW_BAM_FILE} # BAM File
     samtools index ${RAW_BAM_FILE} # Index (TODO check if necessary)
+    # TODO CHECK DOWNLOAD.
 fi
 
 ###################################################
