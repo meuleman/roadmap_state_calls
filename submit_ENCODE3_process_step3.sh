@@ -1,14 +1,16 @@
 #!/bin/bash
+# SGE Array for STEP 3 -- Call states on processed data:
+cell=$( sed "${SGE_TASK_ID}q;d" $LDIR/available_marks.tsv )
 
-mkdir -p out;
+echo "\n- STEP3 for ${cell}"
+CELL_DIR=${TYPE_DIR}/${cell} 
+CC_DIR=${TCALL_DIR}/${cell} # State calls 
+mkdir -p ${CC_DIR}
+cd ${CELL_DIR}
 
-cell_types=`ls ENCODE3_data`;
+# TODO put logic gate on this:
+source $BINDIR/code_ENCODE3_process_step3.sh $cell ${CELL_DIR} ${CC_DIR}
 
-for cell_type in ${cell_types}; do
-  echo "$cell_type";
-  bsub -q compbio-week -P compbiofolk -J ENCODE3_process_step3_${cell_type} \
-       -oo out/output_ENCODE3_process_step3_${cell_type}.out \
-       -R "rusage[mem=9]" ./code_ENCODE3_process_step3.sh ${cell_type}
-done;
+
 
 

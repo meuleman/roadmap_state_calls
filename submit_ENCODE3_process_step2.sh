@@ -1,17 +1,26 @@
 #!/bin/bash
+# SGE Array for STEP 2 -- Pool replicates and do QC if possible!
+cell=$( sed "${SGE_TASK_ID}q;d" $LDIR/available_marks.tsv )
 
-mkdir -p out;
+# TODO implement serial and parallel for epitopes.
+echo "STEP 2 for ${cell}"
+CELL_DIR=${TYPE_DIR}/${cell} 
+cd ${CELL_DIR}
 
-cell_types=`ls ENCODE3_data`;
-epitopes="WCE H3K4me1 H3K4me3 H3K27me3 H3K36me3 H3K9me3 H3K27ac";
+# In serial:
+# For each epitope + DNase + WCE:
+IFS=$'\t'
+while read epitope
+do 
+    echo "\n- STEP2 ${cell}_${epitope}"
+    STEP2_FILE="${CELL_DIR}/FINAL_${cell}_${epitope}.tagAlign.gz"
+    echo $STEP2_FILE
+    if [[ ! -s ${STEP2_FILE} ]]
+    then
+        source $BINDIR/code_ENCODE3_process_step2.sh $cell $epitope ${CELL_DIR}
+    fi
 
-for cell_type in ${cell_types}; do
-  for epitope in ${epitopes}; do
-    echo "$cell_type / $epitope";
-      bsub -q priority -P compbiofolk -J ENCODE3_process_step2_${cell_type}_${epitope} \
-           -oo out/output_ENCODE3_process_step2_${cell_type}_${epitope}.out \
-           -R "rusage[mem=5]" ./code_ENCODE3_process_step2.sh ${cell_type} ${epitope};
-  done;
-done;
+    # TODO Figure out if there are enough reads in the dataset!
 
+done < $DBDIR/epitopes # list of epitopes we are interested in
 

@@ -12,7 +12,7 @@ export UMAPDIR="/broad/compbio/anshul/projects/umap"
 export CHBIN="/broad/compbio/anshul/projects/encode/preprocessing/segmentations/chromhmm/scripts"
 # Get CHMM here: http://compbio.mit.edu/ChromHMM/ChromHMM.zip
 export CHMM=$HOME/data/software/ChromHMM/ChromHMM.jar
-# Older version in anshul's direcotry:
+# Older version in anshul's directory:
 # export CHMM="/broad/compbio/anshul/projects/encode/preprocessing/segmentations/chromhmm/ChromHMM/ChromHMM.jar"
 
 # -- Vars -- 
@@ -54,77 +54,22 @@ do
     echo "Starting ChromHMM pipeline for data from ${type}"
 
     # Type specific directories: 
-    LDIR=$DBDIR/file_links/${type}
-    TYPE_DIR=$DATADIR/${type}
-    TCALL_DIR=$CALLDIR/${type}
+    export LDIR=$DBDIR/file_links/${type}
+    export TYPE_DIR=$DATADIR/${type}
+    export TCALL_DIR=$CALLDIR/${type}
     mkdir -p $TYPE_DIR
     mkdir -p $TCALL_DIR
     cd $TYPE_DIR
 
-    # Processing pipeline for each cell:
-    while read -r q
-    do
-        eval $( echo $q | awk -F'\t' '{printf("cell=\"%s\";",$1)}' )
-        echo ${cell}
-        CELL_DIR=${TYPE_DIR}/${cell} # Keep all files at the $type/$cell level
-        mkdir -p ${CELL_DIR}
-        cd ${CELL_DIR}
+    NCELL=$( wc -l $LDIR/available_marks.tsv | awk '{print $1}' )
+    JOB1=step1_ENCODE3_array_$type
+    qsub -cwd -q long -l mfree=25G -t 1-$NCELL -N $JOB1 -j y -b y -V -r y -o $DBDIR/out/${JOB1}_${SGE_TASK_ID}.out $BINDIR/submit_ENCODE3_process_step1.sh
 
-        # For each epitope + DNase + WCE:
-        step2_jobs="0"
-        while read -r p
-        do 
-            eval $( echo $p | awk -F'\t' '{printf("epitope=\"%s\";",$1)}' )
-            echo "-- ${cell} + ${epitope}"
+    JOB2=step2_ENCODE3_array_$type
+    qsub -cwd -q long -l mfree=25G -t 1-$NCELL -N $JOB2 -hold_jid_ad $JOB1 -j y -b y -V -r y -o $DBDIR/out/${JOB2}_${SGE_TASK_ID}.out $BINDIR/submit_ENCODE3_process_step2.sh
 
-            step1_jobs="0"
-            while read -r repl
-            do
-                # STEP 0 & 1: Download data, filter, remove duplicates.
-                eval $( echo $repl | awk -F',' '{a = $3; split(a,b,"/"); printf("link=\"%s\"; id=%s;",$3,b[5])}' )
+    JOB3=step3_ENCODE3_array_$type
+    qsub -cwd -l mfree=25G -t 1-$NCELL -N $JOB3 -hold_jid_ad $JOB2 -j y -b y -V -r y -o $DBDIR/out/${JOB3}_${SGE_TASK_ID}.out $BINDIR/submit_ENCODE3_process_step3.sh
 
-                JOBNAME=step1_${cell}_${epitope}_${id}
-                STEP1_FILE="${CELL_DIR}/${id}_${cell}_${epitope}.filt.nodup.srt.SE.map.tagAlign.gz"
-                if [[ ! -s $STEP1_FILE ]]
-                then
-                    qsub -cwd -q long -l mfree=25G -N $JOBNAME -j y -b y -V -r y -o $DBDIR/out/$JOBNAME.out $BINDIR/code_ENCODE3_process_step1.sh $id $cell $epitope $link ${CELL_DIR}
-                fi
-
-                if [[ "${step1_jobs}" == "0" ]] # Add jobs for holding list:
-                then 
-                    step1_jobs=${JOBNAME}
-                else
-                    step1_jobs=${step1_jobs},${JOBNAME}
-                fi
-            done < <(grep "${epitope},${cell}" $LDIR/${epitope}.csv)
-
-            # STEP 2 -- Pool replicates!
-            JOBNAME=step2_${cell}_${epitope} 
-            STEP2_FILE="${CELL_DIR}/FINAL_${cell_type}_${epitope}.tagAlign.gz"
-            if [[ ! -s $STEP2_FILE ]]
-            then
-                qsub -cwd -q long -l mfree=25G -hold_jid ${step1_jobs} -N $JOBNAME -o $DBDIR/out/$JOBNAME.out -j y -b y -V -r y $BINDIR/code_ENCODE3_process_step2.sh $cell $epitope ${CELL_DIR}
-            fi
-
-            if [[ "${step2_jobs}" == "0" ]] 
-            then 
-                step2_jobs=${JOBNAME}
-            else
-                step2_jobs=${step2_jobs},${JOBNAME}
-            fi
-
-            # TODO Figure out if there are enough reads in the dataset!
-
-        done < $DBDIR/epitopes # list of epitopes we are interested in
-
-        # TODO hold, wait step 2 to finish
-        CC_DIR=${TCALL_DIR}/${cell} # Calls directory
-        mkdir -p ${CC_DIR}
-
-        JOBNAME=step3_${cell}
-        qsub -cwd -q long -l mfree=25G -hold_jid ${step2_jobs} -N $JOBNAME -o $DBDIR/out/$JOBNAME.out -j y -b y -V -r y $BINDIR/code_ENCODE3_process_step3.sh $cell ${CELL_DIR} ${CC_DIR}
-
-    done < $LDIR/available_marks.tsv # list of available cell types for our marks 
 done
-
 
