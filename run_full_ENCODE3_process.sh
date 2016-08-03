@@ -71,13 +71,14 @@ do
         cd ${CELL_DIR}
 
         # For each epitope + DNase + WCE:
-        step2_jobs="0"
+        step2_jobs="empty"
         while read -r p
         do 
             eval $( echo $p | awk -F'\t' '{printf("epitope=\"%s\";",$1)}' )
             echo "-- ${cell} + ${epitope}"
 
-            step1_jobs="0"
+            # TODO ARRAY JOBS!
+            step1_jobs="empty"
             while read -r repl
             do
                 # STEP 0 & 1: Download data, filter, remove duplicates.
@@ -90,7 +91,7 @@ do
                     qsub -cwd -q long -l mfree=25G -N $JOBNAME -j y -b y -V -r y -o $DBDIR/out/$JOBNAME.out $BINDIR/code_ENCODE3_process_step1.sh $id $cell $epitope $link ${CELL_DIR}
                 fi
 
-                if [[ "${step1_jobs}" == "0" ]] # Add jobs for holding list:
+                if [[ "${step1_jobs}" == "empty" ]] # Add jobs for holding list:
                 then 
                     step1_jobs=${JOBNAME}
                 else
@@ -106,7 +107,7 @@ do
                 qsub -cwd -q long -l mfree=25G -hold_jid ${step1_jobs} -N $JOBNAME -o $DBDIR/out/$JOBNAME.out -j y -b y -V -r y $BINDIR/code_ENCODE3_process_step2.sh $cell $epitope ${CELL_DIR}
             fi
 
-            if [[ "${step2_jobs}" == "0" ]] 
+            if [[ "${step2_jobs}" == "empty" ]] 
             then 
                 step2_jobs=${JOBNAME}
             else
