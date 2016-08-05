@@ -12,7 +12,7 @@ cd ${CELL_DIR}
 IFS=$'\t'
 while read epitope
 do 
-    echo "\n- STEP2 ${cell}_${epitope}"
+    echo "- STEP2 ${cell}_${epitope}"
     STEP2_FILE="${CELL_DIR}/FINAL_${cell}_${epitope}.tagAlign.gz"
     echo $STEP2_FILE
     if [[ ! -s ${STEP2_FILE} ]]

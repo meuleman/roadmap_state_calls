@@ -14,7 +14,7 @@ cd ${CELL_DIR}
 IFS=$'\t'
 while read epitope
 do 
-    echo "\n- STEP 1 for ${cell} + ${epitope}"
+    echo "- STEP 1 for ${cell} + ${epitope}"
 
     # Read replicates:
     while read -r repl

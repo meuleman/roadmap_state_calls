@@ -64,6 +64,7 @@ do
     NCELL=$( wc -l $LDIR/available_marks.tsv | awk '{print $1}' )
     JOB1=step1_ENCODE3_array_$type
     qsub -cwd -q long -l mfree=25G -t 1-$NCELL -N $JOB1 -j y -b y -V -r y -o $DBDIR/out/${JOB1}_${SGE_TASK_ID}.out $BINDIR/submit_ENCODE3_process_step1.sh
+    # qsub -cwd -P compbio_lab -q long -l mfree=25G -t 1-$NCELL -N $JOB1 -j y -b y -V -r y -o $DBDIR/out/${JOB1}_${SGE_TASK_ID}.out $BINDIR/submit_ENCODE3_process_step1.sh
 
     JOB2=step2_ENCODE3_array_$type
     qsub -cwd -q long -l mfree=25G -t 1-$NCELL -N $JOB2 -hold_jid_ad $JOB1 -j y -b y -V -r y -o $DBDIR/out/${JOB2}_${SGE_TASK_ID}.out $BINDIR/submit_ENCODE3_process_step2.sh
