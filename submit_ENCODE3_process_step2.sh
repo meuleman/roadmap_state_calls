@@ -1,6 +1,8 @@
 #!/bin/bash
 # SGE Array for STEP 2 -- Pool replicates and do QC if possible!
 cell=$( sed "${SGE_TASK_ID}q;d" $LDIR/available_marks.tsv )
+cell=$(echo ${cell} | awk '{gsub(" ","_",$0); print $0}')
+
 
 # TODO implement serial and parallel for epitopes.
 echo "STEP 2 for ${cell}"
