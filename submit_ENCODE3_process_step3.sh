@@ -1,6 +1,8 @@
 #!/bin/bash
 # SGE Array for STEP 3 -- Call states on processed data:
 cell=$( sed "${SGE_TASK_ID}q;d" $LDIR/available_marks.tsv )
+cell=$(echo ${cell} | awk '{gsub(" ","_",$0); print $0}')
+
 
 echo "\n- STEP3 for ${cell}"
 CELL_DIR=${TYPE_DIR}/${cell} 

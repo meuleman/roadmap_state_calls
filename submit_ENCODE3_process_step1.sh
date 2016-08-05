@@ -1,7 +1,7 @@
 #!/bin/bash
 # SGE Array for STEP 0 & 1: Download data, filter, remove duplicates.
 cell=$( sed "${SGE_TASK_ID}q;d" $LDIR/available_marks.tsv )
-cell2=$(echo ${cell} | awk '{gsub(" ","_",$0); print $0}')
+cell=$(echo ${cell} | awk '{gsub(" ","_",$0); print $0}') # replace spaces with _
 
 # TODO implement serial and parallel for epitopes.
 echo "STEP 1 for ${cell}"
@@ -28,7 +28,7 @@ do
             source $BINDIR/code_ENCODE3_process_step1.sh $id $cell $epitope $link ${CELL_DIR}
         fi
 
-    done < <(grep "${epitope},${cell2}" $LDIR/${epitope}.csv)
+    done < <(grep "${epitope},${cell}" $LDIR/${epitope}.csv)
 
 done < $DBDIR/epitopes # list of epitopes we are interested in
 
