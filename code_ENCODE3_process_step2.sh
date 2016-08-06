@@ -5,7 +5,7 @@
 ### WE ALSO RUN PHANTOMPEAKQUALTOOLS IN ORDER TO OBTAIN SOME QC STATS
 ###################################################
 SOFTWARE_DIR="/broad/compbio/meuleman/software"
-SPP_EXISTS=false # enable if you have it installed.
+SPP_EXISTS=0 # enable if you have it installed.
 
 cell_type=$1;
 epitope=$2;
@@ -16,7 +16,8 @@ NREADS=30000000; # Final number of desired reads.
 OFPREFIX="${CELL_DIR}/FINAL_${cell_type}_${epitope}";
 FINAL_TA_FILE="${OFPREFIX}.tagAlign.gz"
 
-if [[ ! -s ${FINAL_TA_FILE} ]]
+# Check if gzipped file is empty:
+if LC_ALL=C gzip -l ${FINAL_TA_FILE} | awk 'NR==2 {exit($2!=0)}'
 then
     # =================================
     # Pool all tagAlign files for the same cell type and epitope, and subsample to 30M reads
@@ -26,7 +27,7 @@ then
 fi 
 
 # NOTE: need R library spp from http://compbio.med.harvard.edu/Supplements/ChIP-seq/ 
-if [[ (! -s ${OFPREFIX}.qc ) && ${SPP_EXISTS} ]] 
+if [[ ! -s ${OFPREFIX}.qc && "${SPP_EXISTS}" == "1" ]] 
 then
     # =================================
     # Run 'run_spp_nodups.R' to obtain some QC stats on the final tagAlign file.
