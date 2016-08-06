@@ -66,6 +66,9 @@ do
     qsub -cwd -q long -l mfree=25G -t 1-$NCELL -N $JOB1 -j y -b y -V -r y -o $DBDIR/out/ $BINDIR/submit_ENCODE3_process_step1.sh
     # qsub -cwd -P compbio_lab -q long -l mfree=25G -t 1-$NCELL -N $JOB1 -j y -b y -V -r y -o $DBDIR/out/ $BINDIR/submit_ENCODE3_process_step1.sh
 
+    # If bugs out on several DNase datasets: 
+    # eval $( grep "??? Error" step1_ENCODE3_array_released_hg19.o2593586.* -B 1 | grep Indexing - | awk 'BEGIN{printf("rm ")}{split($2,a,".");print a[1]".*"}' )    
+
     JOB2=step2_ENCODE3_array_$type
     qsub -cwd -q long -l mfree=25G -t 1-$NCELL -N $JOB2 -hold_jid_ad $JOB1 -j y -b y -V -r y -o $DBDIR/out/ $BINDIR/submit_ENCODE3_process_step2.sh
 

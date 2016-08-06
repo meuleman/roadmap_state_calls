@@ -26,7 +26,7 @@ then
 fi 
 
 # NOTE: need R library spp from http://compbio.med.harvard.edu/Supplements/ChIP-seq/ 
-if [[ ! -s ${OFPREFIX}.qc && ${SPP_EXISTS} ]] 
+if [[ (! -s ${OFPREFIX}.qc ) && ${SPP_EXISTS} ]] 
 then
     # =================================
     # Run 'run_spp_nodups.R' to obtain some QC stats on the final tagAlign file.
