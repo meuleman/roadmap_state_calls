@@ -23,7 +23,7 @@ do
 
         echo "-- Running ${cell}_${epitope}_${id}"
         STEP1_FILE="${CELL_DIR}/${id}_${cell}_${epitope}.filt.nodup.srt.SE.map.tagAlign.gz"
-        if [[ ! -s ${STEP1_FILE} ]]
+        if LC_ALL=C gzip -l ${STEP1_FILE} | awk 'NR==2 {exit($2!=0)}'
         then
             source $BINDIR/code_ENCODE3_process_step1.sh $id $cell $epitope $link ${CELL_DIR}
         fi

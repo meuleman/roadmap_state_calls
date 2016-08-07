@@ -41,6 +41,7 @@ FINAL_TA_MAP_FILE="${FINAL_BAM_PREFIX}.SE.map.tagAlign.gz"
 ###################################################
 if LC_ALL=C gzip -l ${FINAL_TA_MAP_FILE} | awk 'NR==2 {exit($2!=0)}'  # Run if final TA file empty
 then 
+    echo "Empty/Missing final TagAlign file"
 
     if samtools view -F 0x904 -c ${RAW_BAM_FILE} | awk '{exit($1!=0)}'
     then 
@@ -54,7 +55,6 @@ then
     ###################################################
     ### STEP 1B --- BASED ON ANSHUL'S ENCODE3 PROPOSAL
     ###################################################
-
     if samtools view -F 0x904 -c ${FILT_BAM_FILE} | awk '{exit($1!=0)}'
     then
         # =============================
