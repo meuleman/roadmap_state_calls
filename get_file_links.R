@@ -45,7 +45,7 @@ get_hrefs <- function(sel, filetype="bam") {
         obj_files <- fromJSON(rawToChar(call$content))
 
         files <- obj_files[["@graph"]]
-        hrefs <- rbind(hrefs, data.frame(href=files$href, file_size=files$file_size));
+        hrefs <- rbind(hrefs, data.frame(href=files$href, file_size=files$file_size, experiment=files$dataset));
     }
     invisible(hrefs);
 }
@@ -80,8 +80,14 @@ for (i in 1:nrow(hrefs_bam)) {
     df <- data.frame();
     for (j in 1:ncol(hrefs_bam)) {
         cell_type <- gsub("\\/", "_", gsub("\ ", "_", colnames(hrefs_bam)[j]));
-        if (!is.null(hrefs_bam[i,j][[1]])) {
-            max_file <- hrefs_bam[i,j][[1]]$href[which.max(hrefs_bam[i,j][[1]]$file_size)];
+        dat <- hrefs_bam[i,j][[1]]
+        if (!is.null(dat)) {
+            # Previously, get top file only:
+            # max_file <- dat$href[which.max(dat$file_size)];
+            # Get the top file for each experiment FIXME do we want all replicates?
+            dat2 <- merge(dat,aggregate(file_size ~ experiment, dat, max))
+            max_file <- dat2$href
+
             df <- rbind(df, data.frame(epitope=epitope, cell_type=cell_type, 
                                        file=paste0("https://www.encodeproject.org", max_file)));
         }

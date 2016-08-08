@@ -25,11 +25,13 @@ for (i in 1:length(URLs)) {
         obj <- fromJSON(rawToChar(call$content))
 
         # Parse some of the data and save.
+        terms <- obj$facets[[2]]
+
         assays <- obj$facets[3,"terms"][[1]]
         dates <- obj$facets[22,"terms"][[1]]
         filetypes <- obj$facets[15,"terms"][[1]];
         experiments <- obj[["@graph"]]
-        save(assays, dates, filetypes, experiments, file=paste("experiments_", nam, ".RData", sep=""))
+        save(assays, dates, filetypes, experiments, terms, file=paste("experiments_", nam, ".RData", sep=""))
     }
 }
 
