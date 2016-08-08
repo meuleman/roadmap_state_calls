@@ -121,7 +121,7 @@ df <- data.frame();
 max_files <- sapply(hrefs_bam, function(x) {
                     if (nrow(x) > 0) {
                         # A. Top by size:
-                        as.character(x$href[which.max(x$file_size)]);
+                        # as.character(x$href[which.max(x$file_size)]);
                         # B. All: 
                         as.character(x$href);
                     }
