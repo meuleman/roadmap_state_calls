@@ -82,12 +82,15 @@ for (i in 1:nrow(hrefs_bam)) {
         cell_type <- gsub("\\/", "_", gsub("\ ", "_", colnames(hrefs_bam)[j]));
         dat <- hrefs_bam[i,j][[1]]
         if (!is.null(dat)) {
-            # Previously, get top file only:
+            # A. Get top file only:
             # max_file <- dat$href[which.max(dat$file_size)];
-            # Get the top file for each experiment FIXME do we want all replicates?
-            dat2 <- merge(dat,aggregate(file_size ~ experiment, dat, max))
-            max_file <- dat2$href
 
+            # B. Get the top file for each experiment
+            # dat2 <- merge(dat,aggregate(file_size ~ experiment, dat, max))
+            # max_file <- dat2$href
+
+            # C. All files: 
+            max_file <- dat$href
             df <- rbind(df, data.frame(epitope=epitope, cell_type=cell_type, 
                                        file=paste0("https://www.encodeproject.org", max_file)));
         }
@@ -114,9 +117,13 @@ save(hrefs_bam, file=paste(links_dir, "hrefs_DNase.RData", sep="/"));
 ###
 epitope <- "DNase"
 df <- data.frame();
+# TODO GET ALL FILES
 max_files <- sapply(hrefs_bam, function(x) {
                     if (nrow(x) > 0) {
+                        # A. Top by size:
                         as.character(x$href[which.max(x$file_size)]);
+                        # B. All: 
+                        as.character(x$href);
                     }
                     });
 
