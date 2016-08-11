@@ -23,13 +23,13 @@ if [[ "$NUMSTATES" == "18" ]]
 then 
     MODEL="/broad/compbio/anshul/projects/roadmap/chromhmmSegmentations/ChmmModels/core_K27ac/parallel/set1/final/model_18_core_K27ac.txt"
     MODELNAME="observed_aux";
-    epitopes="H3K4me1 H3K4me3 H3K27me3 H3K36me3 H3K9me3 H3K27ac";
+    epitopes=(H3K4me1 H3K4me3 H3K27me3 H3K36me3 H3K9me3 H3K27ac)
 else 
     # MODEL="/broad/compbio/anshul/projects/roadmap/segmentations/models/coreMarks/parallel/set2/final/model_15_coreMarks.txt";
     MODEL="/broad/compbio/anshul/projects/roadmap/chromhmmSegmentations/ChmmModels/coreMarks/parallel/set2/final/model_15_coreMarks.txt";
     MODELNAME="observed";
     NUMSTATES=15;
-    epitopes="H3K4me3 H3K4me1 H3K27me3 H3K9me3 H3K36me3";
+    epitopes=(H3K4me3 H3K4me1 H3K27me3 H3K9me3 H3K36me3)
 fi
 
 #==================================
@@ -40,7 +40,7 @@ fi
 #epitopes="H3K4me3 H3K4me1 H3K27me3 H3K9me3 H3K36me3";
 
 rm -f ${CC_DIR}/metaDataFileList.txt
-for epitope in ${epitopes} 
+for epitope in ${epitopes[@]} 
 do
     echo -e "${cell_type}\t${epitope}\tFINAL_${cell_type}_${epitope}.tagAlign.gz\tFINAL_${cell_type}_WCE.tagAlign.gz" >> ${CC_DIR}/metaDataFileList.txt
 done
