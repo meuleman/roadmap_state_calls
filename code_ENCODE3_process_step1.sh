@@ -67,14 +67,13 @@ then
         samtools view -H ${FILT_BAM_FILE} | grep SO
 
     # If still didnt work, likely Phred64
-    if samtools view -F 0x904 -c ${FILT_BAM_FILE} | awk '{exit($1!=0)}'
-        echo "Didn't work -- converting to Phred64"
-        samtools view -h ${RAW_BAM_FILE} | | rescale_quals.py | samtools view -bS - > out.bam
+    # if samtools view -F 0x904 -c ${FILT_BAM_FILE} | awk '{exit($1!=0)}'
+    #     echo "Didn't work -- converting to Phred64"
+    #     # samtools view -h ${RAW_BAM_FILE} | | rescale_quals.py | samtools view -bS - > out.bam
 
-
-        samtools view -F 1805 -q ${MAPQ_THRESH} -b ${RAW_BAM_FILE} | samtools sort - -T ${FILT_BAM_PREFIX}.tmp -o ${FILT_BAM_FILE}
-        samtools view -H ${FILT_BAM_FILE} | grep SO
-    fi
+    #     samtools view -F 1805 -q ${MAPQ_THRESH} -b ${RAW_BAM_FILE} | samtools sort - -T ${FILT_BAM_PREFIX}.tmp -o ${FILT_BAM_FILE}
+    #     samtools view -H ${FILT_BAM_FILE} | grep SO
+    # fi
 
         # ========================
         echo "Marking duplicates for ${FILT_BAM_FILE}"
@@ -87,6 +86,7 @@ then
 
         mv ${TMP_FILT_BAM_FILE} ${FILT_BAM_FILE}
     fi
+
 
     if samtools view -F 0x904 -c ${FINAL_BAM_FILE} | awk '{exit($1!=0)}'
     then
@@ -161,5 +161,6 @@ then
         # Sanity check to see if we were successful:
         zcat ${OFNAME}.gz | tail
     fi
+
 fi
 

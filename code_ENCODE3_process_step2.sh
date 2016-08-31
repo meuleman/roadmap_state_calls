@@ -23,7 +23,17 @@ then
     # Pool all tagAlign files for the same cell type and epitope, and subsample to 30M reads
     # ================================
     echo "Pool files and subsample to create ${FINAL_TA_FILE}"
-    zcat ${CELL_DIR}/*_${cell_type}_${epitope}.filt.nodup.srt.SE.map.tagAlign.gz | shuf -n ${NREADS} | sort -k1,1V -k2,2g | gzip -c > ${FINAL_TA_FILE}
+
+    # Count number of reads left after filtering:
+    REPL_READS=$( zcat ${CELL_DIR}/*_${cell_type}_${epitope}.filt.nodup.srt.SE.map.tagAlign.gz | wc -l )
+    echo "There are ${REPL_READS} reads available from all replicates for ${cell_type} + ${epitope}" 
+    if (( ${REPL_READS} >= $NREADS )) 
+    then
+        echo "Subsampling ${REPL_READS} to ${NREADS}"
+        zcat ${CELL_DIR}/*_${cell_type}_${epitope}.filt.nodup.srt.SE.map.tagAlign.gz | shuf -n ${NREADS} | sort -k1,1V -k2,2g | gzip -c > ${FINAL_TA_FILE}
+    else
+        echo "Not enough reads! ${REPL_READS} > $NREADS"
+    fi
 fi 
 
 # NOTE: need R library spp from http://compbio.med.harvard.edu/Supplements/ChIP-seq/ 
