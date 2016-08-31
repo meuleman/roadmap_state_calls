@@ -87,7 +87,7 @@ then
         mv ${TMP_FILT_BAM_FILE} ${FILT_BAM_FILE}
     fi
 
-
+    # Make BAM file if it is empty
     if samtools view -F 0x904 -c ${FINAL_BAM_FILE} | awk '{exit($1!=0)}'
     then
         # ============================
@@ -107,17 +107,17 @@ then
         # =============================
         # Obtain unique count statistics
 
-        # PBC File output
+        # PBC File output:
         # TotalReadPairs [tab] DistinctReadPairs [tab] OneReadPair [tab] TwoReadPairs [tab] NRF=Distinct/Total [tab] PBC1=OnePair/Distinct [tab] PBC2=OnePair/TwoPair
         bedtools bamtobed -i ${FILT_BAM_FILE} | awk 'BEGIN{OFS="\t"}{print "chr"$1,$2,$3,$6}' | grep -v 'chrM' | sort | uniq -c | \
             awk 'BEGIN{mt=0;m0=0;m1=0;m2=0} ($1==1){m1=m1+1} ($1==2){m2=m2+1} {m0=m0+1} {mt=mt+$1} END{printf "%d\t%d\t%d\t%d\n",mt,m0,m1,m2}' > ${PBC_FILE_QC}
     fi
 
     # Remove temporary data if previous steps have non-zero output
-    if samtools view -F 0x904 -c ${FINAL_BAM_FILE} | awk '{exit($1!=0)}'
+    if samtools view -F 0x904 -c ${FINAL_BAM_FILE} | awk '{exit($1==0)}'
     then
         rm ${FILT_BAM_FILE}
-        rm ${RAW_BAM_FILE}
+        rm ${RAW_BAM_FILE} ${RAW_BAM_FILE}.bai
     fi
 
     ###################################################
@@ -140,10 +140,7 @@ then
     ### IT CALLS filterUniqueReads TO REMOVE ANY POSSIBLE READS IN 'UNMAPPABLE' LOCATIONS
     ###################################################
 
-    SDIR="${SEQDIR}/encodeHg19Male"
-    UDIR="${UMAPDIR}/encodeHg19Male/globalmap_k20tok54"
-
-    # Set output and log file name
+    # Set output and log file name (TODO not necessarily best place to define these)
     OFNAME=$(echo ${FINAL_TA_FILE} | sed -r -e 's/\.tagAlign\.gz$/.map.tagAlign/g')
     LOGFILE=$(echo ${FINAL_TA_FILE} | sed -r -e 's/\.tagAlign\.gz$/.map.tagAlign.logfile/g')
 
@@ -159,7 +156,13 @@ then
         # SOMETIMES WHEN IT DOESN'T HAVE THIS, IT CRASHES WITHOUT WARNING.
 
         # Sanity check to see if we were successful:
-        zcat ${OFNAME}.gz | tail
+        zcat ${OFNAME} | tail
+    fi
+
+    if LC_ALL=C gzip -l ${OFNAME} | awk 'NR==2 {exit($2==0)}'
+    then
+        rm ${FINAL_BAM_FILE}
+        rm ${FINAL_TA_FILE}
     fi
 
 fi

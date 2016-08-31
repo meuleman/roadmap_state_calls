@@ -9,6 +9,10 @@ export TMP=$DATADIR/tmp
 # For step1 - filtering unique reads 
 export SEQDIR="/broad/compbio/anshul/projects/encode/rawdata/sequence"
 export UMAPDIR="/broad/compbio/anshul/projects/umap" 
+export SDIR="${SEQDIR}/encodeHg19Male"
+export UDIR="${UMAPDIR}/encodeHg19Male/globalmap_k20tok54"
+
+# For step3 - chromHMM:
 export CHBIN="/broad/compbio/anshul/projects/encode/preprocessing/segmentations/chromhmm/scripts"
 # Get CHMM here: http://compbio.mit.edu/ChromHMM/ChromHMM.zip
 export CHMM=$HOME/data/software/ChromHMM/ChromHMM.jar
