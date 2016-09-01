@@ -1,6 +1,7 @@
 library(jsonlite)
 library(httr)
 library(gplots)
+library(plyr)
 marks.only=FALSE
 
 args=(commandArgs(TRUE))
@@ -128,10 +129,10 @@ max_files <- sapply(hrefs_bam, function(x) {
                     });
 
 if (length(max_files) > 0) {
-    df <- data.frame(epitope=epitope, cell_type=gsub("\\/", "_", gsub("\ ", "_", names(max_files)[!sapply(max_files, is.null)])),
-                     file=paste0("https://www.encodeproject.org", max_files[!sapply(max_files, is.null)]));
-    write.table(df, file=paste(links_dir, "/", epitope, ".csv", sep=""), 
-                quote=FALSE, row.names=FALSE, sep=",");
+    files <- sapply(max_files[!sapply(max_files,is.null)],function(x){ paste0("https://www.encodeproject.org", x )})
+    ll <- lapply(names(files),function(x){ cbind(epitope=epitope,cell_type=gsub("\\/", "_", gsub("\ ", "_", x)), file=files[[x]]) } )
+    df <- data.frame(do.call(rbind,ll))
+    write.table(df, file=paste(links_dir, "/", epitope, ".csv", sep=""), quote=FALSE, row.names=FALSE, sep=",");
 }
 
 
@@ -140,6 +141,14 @@ repDN <- unlist(lapply(hrefs_bam,length))
 DNase <- rep(0,ncol(mat))
 names(DNase) <- colnames(mat)
 namDN <- colnames(mat)[colnames(mat) %in% names(repDN)]
+if (length(max_files) > 0) {
+    files <- sapply(max_files[!sapply(max_files,is.null)],function(x){ paste0("https://www.encodeproject.org", x )})
+    ll <- lapply(names(files),function(x){ cbind(epitope=epitope,cell_type=gsub("\\/", "_", gsub("\ ", "_", x)), file=files[[x]]) } )
+    df <- data.frame(do.call(rbind,ll))
+    write.table(df, file=paste(links_dir, "/", epitope, ".csv", sep=""), quote=FALSE, row.names=FALSE, sep=",");
+}
+
+
 DNase[namDN] <- repDN[namDN]
 mat <-  rbind(mat,DNase)
 
