@@ -1,7 +1,6 @@
 library(jsonlite)
 library(httr)
 library(gplots)
-library(plyr)
 marks.only=FALSE
 
 args=(commandArgs(TRUE))
