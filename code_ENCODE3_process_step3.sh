@@ -62,10 +62,10 @@ find ${CC_DIR} -name "*_binary.txt" -exec basename {} \; | sort > ${FILELIST}
 java -mx$((MEM * 1024))M -jar $CHMM MakeSegmentation -b 200 -f ${FILELIST} -i CALLS -l $HG19REF ${MODEL} ${CC_DIR} ${CC_DIR}
 
 #ChromHMM_scripts/chmm_relabel.sh ${MODEL} ${CC_DIR} CALLS_REORDERED \
-#  /broad/compbio/anshul/projects/roadmap/segmentations/models/core_K27ac/parallel/set1/final/colormap_18_core_K27ac.tab
+# /broad/compbio/anshul/projects/roadmap/segmentations/models/core_K27ac/parallel/set1/final/colormap_18_core_K27ac.tab
 
 mkdir -p ${CC_DIR}/STATEBYLINE
-#ChromHMM_scripts/chmm_statesbyline.sh ${CC_DIR} ${FILELIST} ${CC_DIR} CALLS_PER_LINE ${MODEL} ${MEM}
+# ChromHMM_scripts/chmm_statesbyline.sh ${CC_DIR} ${FILELIST} ${CC_DIR} CALLS_PER_LINE ${MODEL} ${MEM}
 java -mx$((MEM * 1024))M -jar $CHMM MakeSegmentation -b 200 -nobed -printstatesbyline -f ${FILELIST} \
   -i CALLS_PER_LINE -l $HG19REF ${MODEL} ${CC_DIR} ${CC_DIR}
 gzip -f ${CC_DIR}/STATEBYLINE/*_statebyline.txt

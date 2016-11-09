@@ -11,9 +11,9 @@ secret <- RCurl::base64(paste(consumer_key, consumer_secret, sep=":"));
 ### This is where we obtain most of the metadata
 URLs <- list("released_hg19"    = "type=experiment&status=released&assembly=hg19",
              "released_GRCh38"    = "type=experiment&status=released&assembly=GRCh38",
-             # "preliminary" = "type=experiment&status=preliminary&replicates.library.biosample.donor.organism.scientific_name=Homo%20sapiens",
-             # "proposed"    = "type=experiment&status=proposed&replicates.library.biosample.donor.organism.scientific_name=Homo%20sapiens",
-             # "submitted"   = "type=experiment&status=submitted&replicates.library.biosample.donor.organism.scientific_name=Homo%20sapiens",
+             # "preliminary" = "type=Experiment&status=preliminary&replicates.library.biosample.donor.organism.scientific_name=Homo+sapiens",
+             # "proposed"    = "type=Experiment&status=proposed&replicates.library.biosample.donor.organism.scientific_name=Homo+sapiens",
+             # "submitted"   = "type=Experiment&status=submitted&replicates.library.biosample.donor.organism.scientific_name=Homo+sapiens",
              "all"         = "type=experiment&replicates.library.biosample.donor.organism.scientific_name=Homo%20sapiens");
 
 for (i in 1:length(URLs)) {
